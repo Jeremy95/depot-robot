@@ -7,14 +7,30 @@
 <body>
 	<div align="center"> <br/><br/>
 	
-		<font face="Arial" size="2" color="black">Entrer votre URL de départ</font>
-		<form action="monrobot.php" method="GET">
-		<input type="text" name="site" value="http://" size="60" />&nbsp;
-		<input type="submit" value="Go indexer !" />
-		</form><br/>
+		
 		<font face="Arial" size="1" color="black">Copyright Jeremy Bchiri</font>
 		
 	</div>
+	<div id="results">
+	</div>
+<script type="text/javascript" src="jquery.js">
+</script>
+<script type="text/javascript">
+function robots() { 
+
+$.ajax({
+	url: "monrobot.php",
+	success: function(data) {$("#results").html(data);}
+	});
+	
+}
+
+
+setInterval(robots(), 14400);
+
+
+
+</script>
 </body>
 </html>
 

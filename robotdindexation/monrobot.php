@@ -1,23 +1,22 @@
 <!DOCTYPE>
-<html>
-<head>
-<title>Mon Robot d'indexation</title>
-</head>
-<body>
+
 
 <?php
 
 include('mysql.php');
 include('function/function_log.php');
 
-if(!isset($_GET['site'])) {
 
-	$site = 'http://www.google.fr';
-	
-}
-else {
+if(isset($_GET['site'])) {
 
 	$site = $_GET['site'];
+	
+}
+
+else {
+
+	$site = 'http://www.google.fr';
+
 }
 
 	$code = file_get_contents($site);
@@ -32,7 +31,7 @@ else {
 
 	if(empty($title) || empty($description) || empty($cle) || $title[0] == '' || $description[0] == '' || $cle[0] == '') {
 	echo'&bull; <font color="red">Une des balises n\'est pas fournie.</font><br/><br/>';
-	JEREM_log($site);
+	JEREM_log('ces sites ont une ou des balises manquantes : '.$site);
 	
 	}
 
@@ -49,26 +48,26 @@ else {
 			echo'&bull; <font color="red">Meta description :</font> '.$description[0].'';
 			echo'<br /><br />';
 			echo'&bull; <font color="red">Meta keywords :</font> '.$cle[0].'<br/><br/>';
-			JEREM_log('Le site suivant à était indexé :'.$site);
+			JEREM_log('Le site suivant Ã  Ã©tait indexÃ© :'.$site);
 		
 		
 		
-			$date = date('d/m/y'); 
-			$requete = $connexion->prepare("SELECT * FROM robots WHERE adresse='$site'");
+			$requete = $connexion->prepare("SELECT * FROM robots WHERE lien='$site'");
+			$requete->execute();
 			$reponse = $requete->rowCount();
 
 			if($reponse == 0) {
-	
-				$lk = '1';
-				$requete2 = $connexion->prepare("INSERT INTO robots (titre, description, adresse, key, date, ps) VALUES (:title, :description, :site, :cle, :date, :ps)");
-				$requete2->bindParam(':title', $title[0]);
-				$requete2->bindParam(':description', $description[0]);
-				$requete2->bindParam(':site', $site);
-				$requete2->bindParam(':clee', $cle[0]);
-				$requete2->bindParam(':date', $date);
-				$requete2->bindParam(':ps', $lk);
+				
+				$ps=0;
+				$requete2 = $connexion->prepare("INSERT INTO robots (lien, titre, description, keywords, indexer) VALUES (:site, :title, :description, :cle, :ps)");
+				$requete2->bindParam(':title', $title[0], PDO::PARAM_STR);
+				$requete2->bindParam(':description', $description[0], PDO::PARAM_STR);
+				$requete2->bindParam(':site', $site, PDO::PARAM_STR);
+				$requete2->bindParam(':cle', $cle[0], PDO::PARAM_STR);
+				$requete2->bindParam(':ps', $ps, PDO::PARAM_INT);
 				
 				$requete2->execute();
+				
 				
 			}
 
@@ -77,19 +76,19 @@ else {
 				$donnes = $requete->fetchAll();
 				foreach ($donnes as $donnees) {
 				
-					if($site == $donnees['adresse']) {
+					if($site == $donnees['lien']) {
 			
-						echo $donnees['adresse'];
+						echo $donnees['lien'];
 					
-						$ps = $donnees['ps'];
-						$ps_= $ps+1;
-						$requete_ = $connexion->prepare("UPDATE robots SET ps = :ps_ WHERE adresse = :site");
-						$requete_->bindParam(':ps_', $ps_);
-						$requete_->bindParam(':site', $site);
+						$indexer = $donnees['indexer'];
+						$indexer_= $indexer+1;
+						
+						$requete_ = $connexion->prepare("UPDATE robots SET indexer = :indexer_ WHERE lien = :site");
+						$requete_->bindParam(':indexer_', $indexer_, PDO::PARAM_INT);
+						$requete_->bindParam(':site', $site, PDO::PARAM_STR);
 						$requete_->execute();
 						
-						$query = $connexion->prepare("INSERT INTO Site_deja_indexer (site_deja_indexer) VALUES (".$donnees['adresse'].")");
-						$query->execute();
+						
 					}
 				}
 
@@ -97,15 +96,20 @@ else {
 
 			}
 		}
+		
 			
 if(empty($lien[0])){
 
-	echo'&bull; <font color="red">Aucun lien correspondant n\'a été trouvé.</font><br/>
+	echo'&bull; <font color="red">Aucun lien correspondant n\'a Ã©tÃ© trouvÃ©.</font><br/>
 	<form action="" method="GET"><input type="text" name="site" value="'.$site.'" size="117" /> <input type="submit" value="OK" /></form>';
 }
 else {
 
 	$aleatoire = rand(1, $nb);
+	if($nb == 1){
+	
+		$aleatoire = $nb;
+	}
 	$_lien = $lien[0][$aleatoire];
 
 echo'&bull; <font color="red">Lien suivant : </font> '.$_lien.'<br/><br/>';
@@ -115,13 +119,15 @@ echo'&bull; <font color="red">Nombre de liens : </font>'.$nb.'<br/><br/>';
 
 
 
+
 echo"<script language=\"JavaScript\">
-setTimeout(\"window.location='monrobot.php?site=$_lien'\",3000); 
+setTimeout(\"window.location='monrobot.php?site=$_lien'\"); 
 </script>";
 
 
 
 }
+
 ?>
 
 <br/><br/>
@@ -132,10 +138,8 @@ setTimeout(\"window.location='monrobot.php?site=$_lien'\",3000);
 
 <?php } else { ?>
 
-<div align="center"><font style="color:green; font-family:Arial;"><strong>Indexation stoppée...</strong></font></div>
+<div align="center"><font style="color:green; font-family:Arial;"><strong>Indexation stoppÃ©e...</strong></font></div>
 
 <?php } ?>
 
-<br ><div align="center"><a href="index.php" style="color:red; text-decoration:none">X Stopper</a></div>
-</body>
-</html>
+<br ><div align="center"><a href="index.php" style="color:red; text-decoration:none">Relancer</a></div>
