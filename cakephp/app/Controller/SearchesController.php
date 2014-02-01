@@ -68,7 +68,7 @@ class SearchesController extends AppController{
 						
 						else {
 						
-							$site = 'http://jeuxvideos.com';
+							$site = 'http://google.fr';
 						
 						}
 						
